@@ -213,6 +213,13 @@ textarea{resize:vertical}
 .okx{color:var(--ok);font-size:12.5px;white-space:nowrap}.erx{color:var(--bad);font-size:12.5px}
 .tagx{display:inline-block;font-size:10.5px;font-weight:600;color:var(--ok);background:var(--ok-l);border-radius:4px;padding:1px 5px;margin-right:5px;vertical-align:1px}
 a.btn{text-decoration:none}
+.wbox{border:1px solid var(--line);background:#f7f9fc;border-radius:8px;padding:10px 13px;font-size:13px;color:var(--mut);margin-bottom:16px;line-height:1.5}
+.wbox b{display:block;color:var(--txt);font-size:13.5px;margin-bottom:1px}.wbox.ok{background:var(--ok-l);border-color:#cfe6d8}.wbox.ok b{color:var(--ok)}
+.wbox.bad{background:var(--bad-l);border-color:#f3c7c2;margin:14px 0 0}.wbox.bad b{color:var(--bad)}
+.steps{margin:0 0 16px;padding-left:20px;font-size:13.5px;line-height:1.6}.steps li{margin-bottom:6px}
+code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:#eef1f6;border-radius:4px;padding:1px 5px}
+.pmode{display:inline-flex;align-items:center;gap:6px;font-size:12px;border-radius:999px;padding:2px 10px;margin-left:8px;vertical-align:1px}
+.pmode.tulis{background:var(--ok-l);color:var(--ok)}.pmode.baca{background:var(--warn-l);color:var(--warn)}.pmode.lokal,.pmode.belum{background:#eef0f4;color:#5a6478}
 .btn svg{width:16px;height:16px;fill:currentColor}
 @media (max-width:860px){.shg{grid-template-columns:1fr}.shg label{margin-top:4px}}
 </style>
@@ -447,12 +454,13 @@ function srcPanel(){var l=D.cycles.slice().sort(function(a,b){return(b.tanam||""
    l.map(function(c){var g=ghOf(c.gh),s=syOf(c);return'<tr><td class="b">'+esc(g?g.nama:c.gh)+' · '+esc(c.nama)+'</td><td>'+badge(stat(c))+'</td><td>'+(c.sheet?'<a class="lnk" href="'+esc(c.sheet)+'" target="_blank" rel="noopener">Buka</a>':'<span class="muted">Diisi di laman</span>')+'</td><td class="w">'+
      (s?Object.keys(GS.KLAB).filter(function(k){return s.data[k]}).map(function(k){return GS.KLAB[k]}).join(", ")||'<span class="muted">–</span>':c.sheet?'<span class="'+(SERR[c.id]?"erx":"muted")+'">'+esc(SERR[c.id]||(SBUSY[c.id]?"Sedang dibaca…":"Belum dibaca"))+'</span>':'<span class="muted">–</span>')+'</td><td>'+(s?ftime(s.t):"–")+'</td><td class="r"><button class="lnk" data-ec="'+c.id+'">'+(c.sheet?"Atur":"Hubungkan")+'</button></td></tr>'}).join("")+
    '</tbody></table></div><div class="note">Siklus berjalan dibaca ulang otomatis tiap 10 menit saat laman dibuka; siklus lain tiap 12 jam. Untuk siklus baru: tambahkan siklus, lalu tempel link spreadsheet di detail siklus.</div></div>'}
+function pmodeChip(c){var m=popMode(c),t={tulis:"Tersambung · catatan baru masuk ke spreadsheet",baca:"Spreadsheet hanya dibaca · atur penulisan di Pengaturan",lokal:"Disimpan di laman",belum:"Spreadsheet belum terbaca"}[m];return'<span class="pmode '+m+'">'+t+'</span>'}
 function renderAtur(){
   head("Pengaturan data","Cadangan, ekspor, dan pemulihan data laman ini");
   $("t-atur").innerHTML='<div class="g2"><div class="panel"><div class="phd"><h3>Cadangan & ekspor</h3></div><div class="pbd"><p class="muted" style="margin:0 0 14px">Data yang diisi di laman (siklus, hasil panen, catatan) tersimpan di browser perangkat ini. Data monitoring dibaca dari spreadsheet, jadi sama di semua perangkat. Unduh cadangan secara berkala, terutama sebelum mengganti perangkat atau membersihkan data browser.</p>'+
    '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="bkp">'+IC.dl+'Unduh cadangan (JSON)</button><button class="btn sec" id="csv">'+IC.dl+'Daftar siklus (CSV/Excel)</button></div></div></div>'+
    '<div class="panel"><div class="phd"><h3>Pulihkan dari cadangan</h3></div><div class="pbd"><p class="muted" style="margin:0 0 14px">Pilih file cadangan JSON yang pernah diunduh. Semua data saat ini akan diganti.</p><input type="file" id="imp" accept=".json,application/json"></div></div>'+
-   srcPanel()+'<div class="panel"><div class="phd"><h3>Sumber data awal</h3></div><div class="pbd"><p class="muted" style="margin:0">Data awal diambil dari laporan hasil panen GH-B Siklus 1, laporan gramasi GH-A, spreadsheet populasi GH-A Siklus 2, rencana kerja November 2026, dan SOP budidaya. Kolom bertanda "–" belum terisi; lengkapi lewat detail tiap siklus.</p></div></div>'+
+   srcPanel()+wPanel()+'<div class="panel"><div class="phd"><h3>Sumber data awal</h3></div><div class="pbd"><p class="muted" style="margin:0">Data awal diambil dari laporan hasil panen GH-B Siklus 1, laporan gramasi GH-A, spreadsheet populasi GH-A Siklus 2, rencana kerja November 2026, dan SOP budidaya. Kolom bertanda "–" belum terisi; lengkapi lewat detail tiap siklus.</p></div></div>'+
    '<div class="panel"><div class="phd"><h3>Kembalikan data awal</h3></div><div class="pbd"><p class="muted" style="margin:0 0 14px">Menghapus semua perubahan dan memuat ulang data awal. Tindakan ini tidak bisa dibatalkan.</p><button class="btn del" id="rst">Kembalikan data awal</button></div></div></div>'}
 
 /* ---------- Dialog ---------- */
@@ -506,7 +514,7 @@ function renderPop(){
   if(!pG||!ghOf(pG))pG=D.ghs[0].id;
   var cs=popCycles(pG);if(!cs.filter(function(c){return c.id===pC}).length){var cur=curOf(pG);pC=cur?cur.id:(cs.length?cs[cs.length-1].id:"")}
   var c=cyOf(pC),g=ghOf(pG);
-  head("Riwayat populasi","Catatan jumlah tanaman per siklus, dari tanam hingga panen",'<button class="btn sec" id="pcsv">'+IC.dl+'Unduh riwayat (CSV)</button>'+(c?'<button class="btn" data-newp="1">'+IC.plus+'Catat populasi</button>':''));
+  head("Riwayat populasi","Catatan jumlah tanaman per siklus, dari tanam hingga panen"+(c?pmodeChip(c):""),'<button class="btn sec" id="pcsv">'+IC.dl+'Unduh riwayat (CSV)</button>'+(c?'<button class="btn" data-newp="1">'+IC.plus+'Catat populasi</button>':''));
   var h='<div class="toolbar"><div class="seg">'+D.ghs.map(function(x){return'<button data-pg="'+x.id+'" class="'+(pG===x.id?"on":"")+'">'+esc(x.nama)+'</button>'}).join("")+'</div>'+
     (cs.length?'<div class="seg">'+cs.slice().reverse().map(function(x){return'<button data-pc="'+x.id+'" class="'+(pC===x.id?"on":"")+'">'+esc(x.nama)+(stat(x)==="berjalan"?' <span class="muted">berjalan</span>':'')+'</button>'}).join("")+'</div>':'')+'</div>';
   if(!c){$("t-pop").innerHTML=h+'<div class="panel"><div class="empty">Belum ada siklus di '+esc(g.nama)+'. Tambahkan siklus dulu di menu Siklus tanam.</div></div>';return}
@@ -704,7 +712,7 @@ var GS=(function(){
       if(!d){if(cur&&!cell(r,c0)&&/.+:\s*\d+$/.test(ket)){var sp=ket.lastIndexOf(":");cur.sebab.push([ket.slice(0,sp).trim(),+ket.slice(sp+1)])}continue}
       var lok=cLk>=0?cell(r,cLk):"",kel=int(cell(r,cK)),mas=cM>=0?int(cell(r,cM)):null,jm=int(cell(r,cP));
       if(kel==null&&mas==null&&jm==null){cur=null;continue}
-      cur={tgl:d,lok:lok,ket:ket,mati:kel?Math.abs(kel):"",sulam:mas?Math.abs(mas):"",jml:jm,sebab:[]};out.push(cur)}
+      cur={tgl:d,lok:lok,ket:ket,mati:kel?Math.abs(kel):"",sulam:mas?Math.abs(mas):"",jml:jm,sebab:[],row:i+1};out.push(cur)}
     return{rows:out}}
 
   /* ---------- Pemetaan tab ---------- */
@@ -743,16 +751,18 @@ function syncCycle(c){if(!c.sheet||SBUSY[c.id])return Promise.resolve();SBUSY[c.
 function syncAll(force){var now=Date.now(),l=D.cycles.filter(function(c){if(!c.sheet)return false;if(force)return true;var s=syOf(c);return!s||now-s.t>(stat(c)==="berjalan"?6e5:432e5)});
   if(!l.length){syncUI();return Promise.resolve(0)}var p=Promise.all(l.map(syncCycle)).then(function(){renderAll();return l.length});renderAll();return p}
 
-/* riwayat populasi: catatan di laman + baris baru dari spreadsheet (setelah catatan terakhir di laman) */
+/* riwayat populasi: catatan di laman + baris spreadsheet sesudah catatan laman terakhir.
+   Catatan laman yang cocok dengan baris spreadsheet (tanggal + populasi) diberi nomor baris, supaya bisa diubah ke spreadsheet. */
 var _popsBase=popsOf;
 popsOf=function(cid){var l=_popsBase(cid),c=cyOf(cid),d=c&&syData(c,"pop");if(!d)return l;
-  var last=l.length?l[l.length-1].tgl:"",t0=c.tanam||"",prev=l.length?l[l.length-1].jml:null,out=l.slice();
-  d.rows.forEach(function(r,i){if(/nursery/i.test(r.lok||"")||(t0&&r.tgl<t0)||(last&&r.tgl<=last))return;
+  var t0=c.tanam||"",rows=d.rows.filter(function(r){return!/nursery/i.test(r.lok||"")&&!(t0&&r.tgl<t0)}),used={},maxRow=0,out=[];
+  l.forEach(function(p){var m=rows.filter(function(r){return!used[r.row]&&r.tgl===p.tgl&&(r.jml===p.jml||(r.jml==null&&Number(r.mati||0)===Number(p.mati||0)))})[0];
+    var q=Object.assign({},p);if(m){used[m.row]=1;q.row=m.row;if(m.row>maxRow)maxRow=m.row}else delete q.row;out.push(q)});
+  var last=l.length?l[l.length-1].tgl:"",prev=l.length?l[l.length-1].jml:null;
+  rows.forEach(function(r){if(used[r.row])return;if(maxRow?r.row<=maxRow:(last&&r.tgl<=last))return;
     var j=r.jml;if(j==null){if(prev==null)return;j=prev-(Number(r.mati)||0)+(Number(r.sulam)||0)}
-    var o={id:"gs_"+cid+"_"+i,cy:cid,tgl:r.tgl,jml:j,mati:r.mati,sulam:r.sulam,ket:r.ket,sebab:r.sebab,gs:1};
+    var o={id:"gs_"+cid+"_"+r.row,cy:cid,tgl:r.tgl,jml:j,mati:r.mati,sulam:r.sulam,ket:r.ket,sebab:r.sebab,gs:1,row:r.row};
     if(!out.length){o.awal=1;o.mati="";o.sulam=""}out.push(o);prev=j});return out};
-var _openPop=openPop;
-openPop=function(pid){if(pid&&/^gs_/.test(pid)){toast("Baris ini dibaca dari spreadsheet. Ubah di spreadsheet, lalu tekan Perbarui data.");return}_openPop(pid)};
 
 /* ============ GRAFIK GARIS ============ */
 var LCR={};
@@ -901,6 +911,101 @@ document.addEventListener("click",function(e){var el=e.target.closest("[data-mg]
     var pk=document.querySelector("#sin [data-tab]")?shPicks():{};box.innerHTML='<p class="muted" style="margin:8px 0 0">Membaca spreadsheet…</p>';el.disabled=true;
     GS.sync(u,tn&&tn.value||null,pk).then(function(r){CHK=r;box.innerHTML=shRes(pk)},function(er){box.innerHTML='<p class="erx" style="margin:8px 0 0">'+esc(er.message)+'</p>'}).then(function(){el.disabled=false});return}
 });
+
+/* ============ TULIS KE SPREADSHEET (lewat Google Apps Script milik pengguna) ============ */
+var WKEY="ghd.write.v1",WR=(function(){try{return JSON.parse(localStorage.getItem(WKEY))||{}}catch(e){return{}}})();
+function saveWR(){try{localStorage.setItem(WKEY,JSON.stringify(WR))}catch(e){}}
+function wOn(){return!!(WR.url&&WR.key)}
+function wpost(o){if(!wOn())return Promise.reject(new Error("Penulisan ke spreadsheet belum diatur. Buka Pengaturan data."));
+  o.key=WR.key;
+  return fetch(WR.url,{method:"POST",body:JSON.stringify(o),redirect:"follow"}).then(function(r){return r.text()},function(){throw new Error("Tidak bisa menghubungi skrip. Periksa internet dan URL aplikasi web.")}).then(function(t){var j;
+    try{j=JSON.parse(t)}catch(e){throw new Error("Jawaban skrip tidak terbaca. Pastikan akses aplikasi web diatur ke Siapa saja.")}
+    if(!j.ok)throw new Error(j.err||"Gagal menulis ke spreadsheet");return j})}
+/* tujuan tulis untuk satu siklus: {ss,gid,tab} atau null */
+function popTarget(c){var s=c&&syOf(c);if(!s||!s.map||!s.map.pop)return null;var tb=s.tabs.filter(function(t){return t.gid===s.map.pop})[0];return{ss:s.id,gid:s.map.pop,tab:tb?tb.name.trim():"Populasi"}}
+function popMode(c){if(!c||!c.sheet)return"lokal";if(!popTarget(c))return"belum";return wOn()?"tulis":"baca"}
+function popRec(id){var l=[];D.cycles.forEach(function(c){l=l.concat(popsOf(c.id))});return l.filter(function(p){return p.id===id})[0]}
+
+/* dialog catat / ubah populasi */
+openPop=function(pid){
+  var p=pid?popRec(pid):{cy:pC,tgl:todayS(),jml:"",mati:"",sulam:"",ket:""};if(!p){toast("Catatan tidak ditemukan. Muat ulang data.");return}
+  var c=cyOf(p.cy),lp=lastPop(c),md=popMode(c),tg=popTarget(c),toSheet=md==="tulis"&&(!pid||p.row);
+  var opts=D.ghs.map(function(g){return popCycles(g.id).map(function(x){return'<option value="'+x.id+'"'+(x.id===p.cy?" selected":"")+'>'+esc(g.nama)+' · '+esc(x.nama)+'</option>'}).join("")}).join("");
+  var info=toSheet?'<div class="wbox ok"><b>Tersimpan ke spreadsheet</b>'+esc(cyLabel(c))+' · tab '+esc(tg.tab)+(pid?' · baris '+p.row:' · baris baru di bawah catatan terakhir')+'</div>':
+    md==="baca"?'<div class="wbox"><b>Hanya tersimpan di laman</b>Siklus ini terhubung ke spreadsheet, tetapi penulisan belum diatur di perangkat ini. <button class="lnk" data-go-atur="1">Atur penulisan</button></div>':
+    md==="tulis"&&pid&&!p.row?'<div class="wbox"><b>Hanya tersimpan di laman</b>Catatan ini tidak ditemukan di spreadsheet, jadi perubahan tidak dikirim.</div>':
+    md==="belum"?'<div class="wbox"><b>Hanya tersimpan di laman</b>Tab Populasi belum terbaca dari spreadsheet. Tekan Perbarui data lalu coba lagi.</div>':'';
+  var ro=p.gs&&md!=="tulis";
+  var b=info+(ro?'<div class="wbox"><b>Baris ini dibaca dari spreadsheet</b>Atur penulisan di Pengaturan data untuk mengubahnya dari laman, atau ubah langsung di spreadsheet.</div>':'')+
+   '<div class="fg"><div class="full"><label class="fl">Siklus</label><select data-pf="cy"'+(pid?" disabled":"")+'>'+opts+'</select></div>'+
+   '<div><label class="fl">Tanggal pencatatan</label><input type="date" data-pf="tgl" value="'+esc(p.tgl)+'"></div>'+
+   '<div><label class="fl">Populasi tercatat (tanaman)</label><input type="number" inputmode="numeric" data-pf="jml" value="'+(toSheet?"":esc(p.jml))+'" placeholder="'+(toSheet?"dihitung otomatis"+(lp&&!pid?" · terakhir "+lp.jml:""):(lp&&!pid?"terakhir: "+lp.jml:""))+'"></div>'+
+   '<div><label class="fl">Tanaman mati / dicabut</label><input type="number" inputmode="numeric" min="0" data-pf="mati" value="'+esc(p.mati)+'"></div>'+
+   '<div><label class="fl">Tanaman disulam / masuk</label><input type="number" inputmode="numeric" min="0" data-pf="sulam" value="'+esc(p.sulam)+'"></div>'+
+   '<div class="full"><label class="fl">Keterangan</label><textarea rows="2" data-pf="ket" placeholder="mis. Tanaman mozaik, layu GSB, lajur terdampak">'+esc(p.ket)+'</textarea></div>'+
+   (pid?'':'<div class="full"><label class="fl">Rincian penyebab <span class="muted">(opsional, satu per baris)</span></label><textarea rows="2" data-pf="sebab" placeholder="Mozaik: 10&#10;Layu GSB: 2"></textarea></div>')+'</div>'+
+   '<p class="muted" style="margin:12px 0 0">'+(toSheet?'Kosongkan populasi agar dihitung dari baris sebelumnya di spreadsheet (− mati + sulam). Rincian penyebab ditulis sebagai baris di bawah catatan.':'Bila kolom populasi dikosongkan, populasi dihitung otomatis dari catatan terakhir − mati + sulam.')+'</p><div id="perr"></div>';
+  var del=pid&&!p.gs?'<button class="btn del" data-delp="'+pid+'">Hapus'+(p.row?' dari laman':'')+'</button>':'';
+  dlg(pid?"Ubah catatan populasi":"Catat populasi",b,del+'<div class="sp"></div><button class="btn sec" data-close="1">Batal</button>'+(ro?'':'<button class="btn" data-savep2="'+(pid||"")+'">'+(toSheet?"Simpan ke spreadsheet":"Simpan")+'</button>'))};
+
+function popForm(){var g=function(k){var el=document.querySelector('#sin [data-pf="'+k+'"]');return el?el.value.trim():""},n=function(k){var v=g(k);return v===""?"":Math.abs(Number(v.replace(",",".")))};
+  var sb=g("sebab").split(/\n+/).map(function(x){var m=x.match(/^(.+?)[:=]\s*(\d+)\s*$/);return m?[m[1].trim(),+m[2]]:null}).filter(Boolean);
+  return{cy:g("cy"),tgl:g("tgl"),jml:n("jml"),mati:n("mati"),sulam:n("sulam"),ket:g("ket"),sebab:sb}}
+function popLocal(pid,f){var o=pid?D.pops.filter(function(z){return z.id===pid})[0]:null;
+  if(pid&&!o){var r=popRec(pid);if(!r)return false;o=Object.assign({},r);delete o.gs;delete o.row;o.id="p"+Date.now();D.pops.push(o)}
+  if(!o){o={id:"p"+Date.now()};D.pops.push(o)}
+  var om=o.mati;o.cy=f.cy;o.tgl=f.tgl;o.mati=f.mati;if(o.sebab&&om!==o.mati)delete o.sebab;if(f.sebab.length)o.sebab=f.sebab;o.sulam=f.sulam;o.ket=f.ket;o.jml=f.jml;
+  if(o.jml===""){var prev=popsOf(o.cy).filter(function(z){return z.id!==o.id&&z.tgl<=o.tgl}).pop(),base=prev?prev.jml:firstPopV(cyOf(o.cy));
+    if(base===""||base==null){D.pops=D.pops.filter(function(z){return z!==o});toast("Isi populasi tercatat");return false}o.jml=Number(base)-(Number(o.mati)||0)+(Number(o.sulam)||0)}
+  save();return true}
+document.addEventListener("click",function(e){var el=e.target.closest("[data-savep2],[data-plocal],[data-go-atur]");if(!el)return;var ds=el.dataset;
+  if(ds.goAtur){$("sheet").classList.remove("on");go("atur");setTimeout(function(){var w=$("wurl");if(w){w.scrollIntoView({behavior:"smooth",block:"center"});w.focus()}},80);return}
+  var pid=ds.savep2!=null?ds.savep2:ds.plocal,f=popForm(),p=pid?popRec(pid):null,c=cyOf(p?p.cy:f.cy);if(p)f.cy=p.cy;
+  if(!f.tgl){toast("Isi tanggal");return}
+  if(c&&c.tanam&&f.tgl<c.tanam&&!confirm("Tanggal sebelum tanggal tanam siklus ini ("+fd(c.tanam)+"). Tetap simpan?"))return;
+  function done(msg){pC=f.cy;pG=cyOf(f.cy).gh;$("sheet").classList.remove("on");renderAll();toast(msg)}
+  var toSheet=ds.savep2!=null&&popMode(c)==="tulis"&&(!pid||(p&&p.row));
+  if(!toSheet){if(popLocal(pid,f))done("Catatan populasi tersimpan di laman");return}
+  if(!pid&&!f.mati&&!f.sulam&&f.jml===""){toast("Isi jumlah mati, sulam, atau populasi");return}
+  var t=popTarget(c),q={act:pid?"popEdit":"popAdd",ss:t.ss,gid:t.gid,tgl:f.tgl,ket:f.ket,kel:f.mati,mas:f.sulam,jml:f.jml,sebab:f.sebab};
+  if(pid){q.row=p.row;q.was=p.tgl}
+  var bt=document.querySelectorAll("#mf .btn");bt.forEach(function(b){b.disabled=true});el.textContent="Menyimpan…";$("perr").innerHTML="";
+  wpost(q).then(function(r){
+    if(pid&&!p.gs){var o=D.pops.filter(function(z){return z.id===pid})[0];if(o){o.tgl=f.tgl;o.ket=f.ket;o.mati=f.mati;o.sulam=f.sulam;o.jml=Number(r.jml);save()}}
+    done((pid?"Baris "+r.row+" diperbarui":"Tersimpan di baris "+r.row)+" · tab "+r.tab+(r.note?". "+r.note:""));
+    if(r.note)setTimeout(function(){alert(r.note)},50);
+    syncCycle(c).then(renderAll)
+  },function(er){bt.forEach(function(b){b.disabled=false});el.textContent="Simpan ke spreadsheet";
+    $("perr").innerHTML='<div class="wbox bad"><b>Gagal menyimpan ke spreadsheet</b>'+esc(er.message)+(p&&p.gs?'':'<div style="margin-top:8px"><button class="btn sec" data-plocal="'+(pid||"")+'">Simpan di laman saja</button></div>')+'</div>'})
+},true);
+
+/* panel pengaturan penulisan */
+function wPanel(){var st=wOn()?'<span class="badge ok">Aktif di perangkat ini</span>':'<span class="badge rencana">Belum diatur</span>';
+  return'<div class="panel" style="grid-column:1/-1"><div class="phd"><h3>Penulisan ke spreadsheet '+st+'</h3><button class="lnk" id="wguide">'+(WR.g?"Sembunyikan panduan":"Panduan pemasangan")+'</button></div><div class="pbd">'+
+   '<p class="muted" style="margin:0 0 14px">Catatan populasi yang diisi di laman langsung ditulis ke tab Populasi spreadsheet siklusnya. Penulisan memakai skrip kecil (Google Apps Script) di akun Google Anda; pasang sekali, lalu isi URL dan kode akses di setiap perangkat yang dipakai mencatat.</p>'+
+   (WR.g?'<ol class="steps"><li>Buka <a class="lnk" href="https://script.google.com/home/projects/create" target="_blank" rel="noopener">script.google.com</a> dengan akun pemilik spreadsheet, lalu buat proyek baru dan beri nama, misalnya <b>Penulis Dashboard Lavaland</b>.</li>'+
+     '<li>Hapus isi file <b>Code.gs</b>, lalu tempel skrip dari tombol <b>Salin skrip</b> di bawah.</li>'+
+     '<li>Ganti <code>GANTI-DENGAN-KODE-ANDA</code> di baris <code>KODE_AKSES</code> dengan kode rahasia Anda sendiri (minimal 8 karakter), lalu simpan.</li>'+
+     '<li>Pilih <b>Terapkan › Deployment baru</b>, jenis <b>Aplikasi web</b>. Isi <b>Jalankan sebagai: Saya</b> dan <b>Yang memiliki akses: Siapa saja</b>, lalu Terapkan dan izinkan aksesnya.</li>'+
+     '<li>Salin <b>URL aplikasi web</b> (berakhiran <code>/exec</code>) ke kolom di bawah, isi kode akses yang sama, lalu tekan <b>Uji & simpan</b>.</li></ol>'+
+     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px"><button class="btn sec" id="wcopy">Salin skrip</button><button class="btn sec" id="wdl">'+IC.dl+'Unduh Code.gs</button></div>':'')+
+   '<div class="fg"><div class="full"><label class="fl">URL aplikasi web</label><input id="wurl" type="url" placeholder="https://script.google.com/macros/s/…/exec" value="'+esc(WR.url||"")+'"></div>'+
+   '<div><label class="fl">Kode akses</label><input id="wkey" type="password" autocomplete="off" value="'+esc(WR.key||"")+'"></div>'+
+   '<div style="display:flex;align-items:flex-end;gap:8px"><button class="btn" id="wtest">Uji & simpan</button>'+(wOn()?'<button class="btn sec" id="woff">Putuskan</button>':'')+'</div></div><div id="wres"></div>'+
+   '<p class="muted" style="margin:14px 0 0;font-size:12.5px">Kode akses hanya tersimpan di browser ini dan tidak ikut ke GitHub. Siapa pun yang tahu URL dan kode bisa menulis ke tab Populasi, jadi bagikan hanya ke tim.</p></div></div>'}
+document.addEventListener("click",function(e){var id=e.target.id;
+  if(id==="wguide"){WR.g=!WR.g;saveWR();renderAtur();return}
+  if(id==="wcopy"){var done=function(){toast("Skrip disalin")};if(navigator.clipboard)navigator.clipboard.writeText(GAS_SRC).then(done,function(){prompt("Salin skrip ini:",GAS_SRC)});else prompt("Salin skrip ini:",GAS_SRC);return}
+  if(id==="wdl"){dl("Code.gs",GAS_SRC,"text/plain");return}
+  if(id==="woff"){if(confirm("Putuskan penulisan ke spreadsheet di perangkat ini?")){delete WR.url;delete WR.key;saveWR();renderAtur();toast("Penulisan diputus")}return}
+  if(id==="wtest"){var u=$("wurl").value.trim(),k=$("wkey").value,box=$("wres");
+    if(!/^https:\/\/script\.google(usercontent)?\.com\/.+/.test(u)){box.innerHTML='<p class="erx" style="margin:10px 0 0">URL harus alamat aplikasi web Apps Script (https://script.google.com/macros/s/…/exec).</p>';return}
+    if(k.length<8){box.innerHTML='<p class="erx" style="margin:10px 0 0">Kode akses minimal 8 karakter.</p>';return}
+    var old={url:WR.url,key:WR.key};WR.url=u;WR.key=k;e.target.disabled=true;box.innerHTML='<p class="muted" style="margin:10px 0 0">Menghubungi skrip…</p>';
+    wpost({act:"ping"}).then(function(){saveWR();renderAtur();toast("Penulisan ke spreadsheet aktif")},function(er){WR.url=old.url;WR.key=old.key;e.target.disabled=false;box.innerHTML='<p class="erx" style="margin:10px 0 0">'+esc(er.message)+'</p>'});return}
+});
+
+var GAS_SRC="/**\n * Penulis Dashboard Greenhouse Lavaland → spreadsheet FORM MONITORING\n * Menerima catatan dari laman dashboard lalu menuliskannya ke tab Populasi\n * di spreadsheet siklus yang dituju. Skrip berjalan atas nama akun Anda,\n * jadi hanya spreadsheet yang bisa Anda ubah yang bisa ditulis.\n *\n * 1. Ganti KODE_AKSES di bawah dengan kode rahasia Anda sendiri (minimal 8 karakter).\n * 2. Terapkan › Deployment baru › Aplikasi web\n *      Jalankan sebagai: Saya   ·   Yang memiliki akses: Siapa saja\n * 3. Salin URL aplikasi web ke laman: Pengaturan data › Penulisan ke spreadsheet.\n */\nconst KODE_AKSES = 'GANTI-DENGAN-KODE-ANDA';\nconst VERSI = 1;\n\nfunction doGet() {\n  return keluaran({ ok: true, app: 'lavaland-dashboard-writer', v: VERSI });\n}\n\nfunction doPost(e) {\n  const kunci = LockService.getScriptLock();\n  try {\n    const q = JSON.parse((e && e.postData && e.postData.contents) || '{}');\n    if (!KODE_AKSES || KODE_AKSES.indexOf('GANTI') === 0 || KODE_AKSES.length < 8)\n      return keluaran({ ok: false, err: 'Kode akses di skrip belum diganti (minimal 8 karakter).' });\n    if (q.key !== KODE_AKSES) return keluaran({ ok: false, err: 'Kode akses salah.' });\n    if (q.act === 'ping') return keluaran({ ok: true, v: VERSI });\n    kunci.waitLock(20000);\n    const ss = SpreadsheetApp.openById(q.ss);\n    const sh = ss.getSheets().filter(function (s) { return String(s.getSheetId()) === String(q.gid); })[0];\n    if (!sh) return keluaran({ ok: false, err: 'Tab Populasi tidak ditemukan di spreadsheet.' });\n    if (q.act === 'popAdd') return keluaran(tambahPopulasi(ss, sh, q));\n    if (q.act === 'popEdit') return keluaran(ubahPopulasi(ss, sh, q));\n    return keluaran({ ok: false, err: 'Perintah tidak dikenal.' });\n  } catch (err) {\n    return keluaran({ ok: false, err: String((err && err.message) || err) });\n  } finally {\n    try { kunci.releaseLock(); } catch (x) {}\n  }\n}\n\nfunction keluaran(o) {\n  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);\n}\n\n/* ---------- alat bantu ---------- */\nfunction huruf(c) { var s = ''; c++; while (c > 0) { var m = (c - 1) % 26; s = String.fromCharCode(65 + m) + s; c = Math.floor((c - 1) / 26); } return s; }\nfunction serial(iso) { var p = String(iso).split('-').map(Number); return (Date.UTC(p[0], p[1] - 1, p[2]) - Date.UTC(1899, 11, 30)) / 864e5; }\nfunction adaTanggal(x) { return x instanceof Date || (typeof x === 'number' && x > 40000 && x < 60000) || (typeof x === 'string' && /\\d/.test(x) && /[a-z]{3}|\\//i.test(x)); }\nfunction kosong(x) { return x === '' || x === null || x === undefined; }\nfunction angka(x) { return typeof x === 'number' ? x : (kosong(x) ? 0 : Number(String(x).replace(/\\./g, '').replace(',', '.')) || 0); }\n\n/* cari tabel populasi paling kiri: Tanggal | (Lokasi) | Deskripsi | Keluar (-) | Masuk (+) | Populasi */\nfunction tabel(sh) {\n  var rg = sh.getDataRange(), v = rg.getValues(), f = rg.getFormulas();\n  for (var i = 0; i < Math.min(v.length, 12); i++) for (var j = 0; j < v[i].length; j++) {\n    if (String(v[i][j]).trim().toLowerCase() !== 'tanggal') continue;\n    var c = { t: j }, hd = v[i];\n    for (var k = j + 1; k < Math.min(j + 7, hd.length); k++) {\n      var x = String(hd[k]).trim().toLowerCase();\n      if (c.k == null && /^keluar/.test(x)) c.k = k;\n      else if (c.m == null && /^masuk/.test(x)) c.m = k;\n      else if (c.p == null && /^populasi/.test(x)) c.p = k;\n      else if (c.d == null && /^(deskripsi|keterangan|kejadian)/.test(x)) c.d = k;\n      else if (c.l == null && /^lokasi/.test(x)) c.l = k;\n    }\n    if (c.k != null && c.p != null) {\n      if (c.d == null) c.d = c.l != null ? c.l + 1 : j + 1;\n      c.h = i; c.v = v; c.f = f;\n      c.w = Math.max(c.k, c.m == null ? 0 : c.m, c.p, c.d, c.l == null ? 0 : c.l) - j + 1;\n      return c;\n    }\n  }\n  throw new Error('Tabel populasi (Tanggal, Keluar, Populasi) tidak ditemukan di tab ini.');\n}\nfunction sel(T, i, k) { return T.v[i] ? T.v[i][k] : ''; }\nfunction rumus(T, i, k) { return T.f[i] ? T.f[i][k] : ''; }\nfunction barisTerakhir(T) { var a = -1; for (var i = T.h + 1; i < T.v.length; i++) if (adaTanggal(sel(T, i, T.t))) a = i; return a; }\nfunction barisSebelum(T, i) { for (var j = i - 1; j > T.h; j--) if (adaTanggal(sel(T, j, T.t))) return j; return -1; }\n/* Keluar ditulis negatif (=E+C+D) kecuali rumus sebelumnya memakai pola \"−Keluar\" */\nfunction keluarPositif(T, i) {\n  var r = rumus(T, i, T.p); if (!r) return false;\n  return new RegExp('-\\\\s*\\\\$?' + huruf(T.k) + '\\\\$?' + (i + 1) + '(?!\\\\d)').test(r);\n}\nfunction rumusPopulasi(T, prev, r, pos) {\n  return '=' + huruf(T.p) + (prev + 1) + (pos ? '-' : '+') + huruf(T.k) + r + (T.m != null ? '+' + huruf(T.m) + r : '');\n}\nfunction tulisBaris(sh, T, r, q, prevIdx, pos) {\n  var nKel = Math.abs(angka(q.kel)), nMas = Math.abs(angka(q.mas));\n  sh.getRange(r, T.t + 1).setValue(serial(q.tgl));\n  if (T.l != null) {\n    var lk = q.lok != null ? q.lok : String(sel(T, prevIdx, T.l) || '');\n    sh.getRange(r, T.l + 1).setValue(/nursery/i.test(lk) ? '' : lk);\n  }\n  sh.getRange(r, T.d + 1).setValue(q.ket || '');\n  sh.getRange(r, T.k + 1).setValue(nKel ? (pos ? nKel : -nKel) : '');\n  if (T.m != null) sh.getRange(r, T.m + 1).setValue(nMas || '');\n  return { kel: nKel, mas: nMas };\n}\n\n/* ---------- tambah catatan ---------- */\nfunction tambahPopulasi(ss, sh, q) {\n  var T = tabel(sh), last = barisTerakhir(T);\n  if (last < 0) throw new Error('Belum ada baris bertanggal di tabel populasi.');\n  var pos = last + 1;\n  while (pos < T.v.length && kosong(sel(T, pos, T.t)) && /:\\s*\\d+\\s*$/.test(String(sel(T, pos, T.d)))) pos++;\n  var sebab = (q.sebab || []).filter(function (s) { return s && s[0] && Number(s[1]) > 0; });\n  var n = 1 + sebab.length, r = pos + 1, bebas = true;\n  for (var i = pos; i < pos + n; i++) for (var j = T.t; j < T.t + T.w; j++) if (!kosong(sel(T, i, j)) || rumus(T, i, j)) bebas = false;\n  if (!bebas) sh.getRange(r, T.t + 1, n, T.w).insertCells(SpreadsheetApp.Dimension.ROWS);\n  sh.getRange(last + 1, T.t + 1, 1, T.w).copyTo(sh.getRange(r, T.t + 1, 1, T.w), SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);\n  var positif = keluarPositif(T, last), x = tulisBaris(sh, T, r, q, last, positif);\n  var hitung = angka(sel(T, last, T.p)) - x.kel + x.mas, jml = kosong(q.jml) ? hitung : Number(q.jml);\n  if (rumus(T, last, T.p) && jml === hitung) sh.getRange(r, T.p + 1).setFormula(rumusPopulasi(T, last, r, positif));\n  else sh.getRange(r, T.p + 1).setValue(jml);\n  sebab.forEach(function (s, i) {\n    sh.getRange(r + 1 + i, T.t + 1, 1, T.w).clearContent();\n    sh.getRange(r + 1 + i, T.d + 1).setValue(String(s[0]).trim() + ': ' + Number(s[1]));\n  });\n  SpreadsheetApp.flush();\n  return { ok: true, row: r, jml: sh.getRange(r, T.p + 1).getValue(), tab: sh.getName() };\n}\n\n/* ---------- ubah catatan ---------- */\nfunction ubahPopulasi(ss, sh, q) {\n  var T = tabel(sh), i = Number(q.row) - 1;\n  if (!(i > T.h) || !adaTanggal(sel(T, i, T.t))) throw new Error('Baris yang diubah tidak lagi berisi catatan populasi. Muat ulang data lalu coba lagi.');\n  var tz = ss.getSpreadsheetTimeZone(), lama = sel(T, i, T.t);\n  var tLama = lama instanceof Date ? Utilities.formatDate(lama, tz, 'yyyy-MM-dd') : (typeof lama === 'number' ? new Date(Date.UTC(1899, 11, 30) + lama * 864e5).toISOString().slice(0, 10) : '');\n  if (q.was && tLama && tLama !== q.was) throw new Error('Isi spreadsheet sudah berubah sejak terakhir dibaca. Tekan Perbarui data lalu ubah lagi.');\n  var prev = barisSebelum(T, i), positif = keluarPositif(T, i) || (prev >= 0 && keluarPositif(T, prev));\n  var adaRumus = !!rumus(T, i, T.p), x = tulisBaris(sh, T, i + 1, q, prev >= 0 ? prev : i, positif), catatan = '';\n  if (!adaRumus) {\n    var hitung = prev >= 0 ? angka(sel(T, prev, T.p)) - x.kel + x.mas : angka(sel(T, i, T.p));\n    var jml = kosong(q.jml) ? hitung : Number(q.jml);\n    var sebelum = angka(sel(T, i, T.p));\n    sh.getRange(i + 1, T.p + 1).setValue(jml);\n    if (jml !== sebelum) for (var j = i + 1; j < T.v.length; j++) if (adaTanggal(sel(T, j, T.t)) && !rumus(T, j, T.p)) { catatan = 'Kolom Populasi di baris berikutnya diketik manual, jadi tidak ikut berubah. Periksa baris setelah tanggal ini.'; break; }\n  } else if (!kosong(q.jml)) {\n    SpreadsheetApp.flush();\n    if (Number(sh.getRange(i + 1, T.p + 1).getValue()) !== Number(q.jml)) catatan = 'Populasi dihitung oleh rumus di spreadsheet, jadi angka yang diketik tidak dipakai.';\n  }\n  SpreadsheetApp.flush();\n  return { ok: true, row: i + 1, jml: sh.getRange(i + 1, T.p + 1).getValue(), note: catatan, tab: sh.getName() };\n}\n";
 
 /* ============ AKSI ============ */
 function dl(name,text,type){var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:type}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
